@@ -8,7 +8,8 @@
 2. Cloudflare Pages 负责自动构建和对外访问。
 3. `/admin/` 是后台写作入口，用 Decap CMS 写文章、传图片和视频。
 4. `incoming/` 是手动上传入口，把 Markdown、HTML、TXT、DOCX、RTF 或媒体文件丢进去后运行导入脚本自动识别。
-5. 大视频或不想进 Git 的媒体可以用 Cloudflare R2，通过 `/admin/upload.html` 上传。
+5. GitHub Actions 会把每次 push 自动部署到 Cloudflare Pages。
+6. 大视频或不想进 Git 的媒体可以在启用 Cloudflare R2 后，通过 `/admin/upload.html` 上传。
 
 ## 选型结论
 
@@ -61,7 +62,9 @@ npm run import
 
 ## Cloudflare Pages 配置
 
-连接 GitHub 仓库后，Cloudflare Pages 填：
+当前仓库已经包含 GitHub Actions 直传 Cloudflare Pages 的工作流。这样不依赖 Cloudflare Dashboard 的 GitHub 安装状态。
+
+如果你改成 Cloudflare Dashboard 连接 GitHub，填写：
 
 ```text
 Build command: npm run build
@@ -76,7 +79,26 @@ GITHUB_CLIENT_ID
 GITHUB_CLIENT_SECRET
 ```
 
-R2 上传需要设置：
+GitHub Actions 部署需要在 GitHub Secrets 设置：
+
+```text
+CLOUDFLARE_ACCOUNT_ID
+CLOUDFLARE_API_KEY
+CLOUDFLARE_EMAIL
+```
+
+R2 上传需要先在 Cloudflare Dashboard 启用 R2，然后给 Pages 项目增加 R2 binding：
+
+```jsonc
+"r2_buckets": [
+  {
+    "binding": "MEDIA_BUCKET",
+    "bucket_name": "ckai-blog-media"
+  }
+]
+```
+
+并设置：
 
 ```text
 UPLOAD_TOKEN

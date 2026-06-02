@@ -25,7 +25,7 @@ Astro + Decap CMS + Cloudflare Pages + GitHub + Cloudflare R2
 
 - Astro 负责干净静态博客页面。
 - Decap CMS 负责 `/admin/` 后台写作，并把内容提交到 GitHub。
-- Cloudflare Pages 监听 GitHub，自动构建和部署。
+- GitHub Actions 监听 GitHub push，自动构建并直传到 Cloudflare Pages。
 - `incoming/` + `npm run import` 负责手动上传识别。
 - R2 负责不想放进 Git 的图片和视频。
 
@@ -111,7 +111,7 @@ public/media/uploads/
 
 ### R2 图床/视频床
 
-部署后访问：
+Cloudflare 当前账号需要先在 Dashboard 启用 R2。启用后访问：
 
 ```text
 https://你的域名/admin/upload.html
@@ -121,7 +121,9 @@ https://你的域名/admin/upload.html
 
 ## Cloudflare Pages 设置
 
-Cloudflare Pages 连接 GitHub 仓库后：
+当前推荐使用 GitHub Actions 直传 Cloudflare Pages，不依赖 Cloudflare 的 GitHub App 安装状态。
+
+如果改成 Cloudflare Pages 直接连接 GitHub 仓库：
 
 ```text
 Build command: npm run build
@@ -129,7 +131,15 @@ Build output directory: dist
 Production branch: main
 ```
 
-## 必填环境变量
+## GitHub Actions 必填 Secrets
+
+```text
+CLOUDFLARE_ACCOUNT_ID
+CLOUDFLARE_API_KEY
+CLOUDFLARE_EMAIL
+```
+
+## 后台和 R2 必填环境变量
 
 ```text
 GITHUB_CLIENT_ID
