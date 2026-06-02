@@ -83,9 +83,10 @@ GitHub Actions 部署需要在 GitHub Secrets 设置：
 
 ```text
 CLOUDFLARE_ACCOUNT_ID
-CLOUDFLARE_API_KEY
-CLOUDFLARE_EMAIL
+CLOUDFLARE_API_TOKEN
 ```
+
+建议用 Cloudflare API Token，不要把 Global API Key 放进 GitHub Secrets。Token 权限只给 Pages 项目部署所需权限。
 
 R2 上传需要先在 Cloudflare Dashboard 启用 R2，然后给 Pages 项目增加 R2 binding：
 

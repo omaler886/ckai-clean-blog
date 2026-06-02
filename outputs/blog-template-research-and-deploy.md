@@ -135,9 +135,10 @@ Production branch: main
 
 ```text
 CLOUDFLARE_ACCOUNT_ID
-CLOUDFLARE_API_KEY
-CLOUDFLARE_EMAIL
+CLOUDFLARE_API_TOKEN
 ```
+
+建议使用最小权限 Cloudflare API Token，不建议把 Global API Key 持久保存到 GitHub Secrets。
 
 ## 后台和 R2 必填环境变量
 
