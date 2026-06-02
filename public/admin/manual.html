@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>手动写作后台</title>
+    <style>
+      :root {
+        --bg: #fbfaf7;
+        --surface: #fff;
+        --text: #24211d;
+        --muted: #6d665c;
+        --line: #d8d0c5;
+        --accent: #0f6b61;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        max-width: 840px;
+        margin: 0 auto;
+        padding: 32px 16px 56px;
+        color: var(--text);
+        background: var(--bg);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.65;
+      }
+
+      h1 {
+        margin: 0 0 22px;
+        font-size: 32px;
+      }
+
+      label {
+        display: block;
+        margin: 16px 0 6px;
+        font-weight: 650;
+      }
+
+      input,
+      textarea,
+      button {
+        width: 100%;
+        font: inherit;
+      }
+
+      input,
+      textarea {
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        color: var(--text);
+        background: var(--surface);
+      }
+
+      textarea {
+        min-height: 320px;
+        resize: vertical;
+      }
+
+      button {
+        margin-top: 18px;
+        padding: 10px 16px;
+        border: 0;
+        border-radius: 6px;
+        color: #fff;
+        background: var(--accent);
+        cursor: pointer;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+
+      .check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .check input {
+        width: auto;
+      }
+
+      .muted,
+      output {
+        color: var(--muted);
+      }
+
+      output {
+        display: block;
+        min-height: 32px;
+        margin-top: 16px;
+        white-space: pre-wrap;
+      }
+
+      @media (max-width: 680px) {
+        .row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>手动写作后台</h1>
+    <p class="muted">文章会直接提交到 GitHub 仓库，Cloudflare Pages 会用 GitHub 内容重新部署。</p>
+
+    <form id="post-form">
+      <label for="token">GitHub token</label>
+      <input id="token" type="password" autocomplete="off" required />
+
+      <div class="row">
+        <div>
+          <label for="title">标题</label>
+          <input id="title" required />
+        </div>
+        <div>
+          <label for="date">日期</label>
+          <input id="date" type="date" required />
+        </div>
+      </div>
+
+      <label for="description">摘要</label>
+      <input id="description" />
+
+      <label for="tags">标签</label>
+      <input id="tags" placeholder="博客, 随笔" />
+
+      <label for="media">上传图片或视频</label>
+      <input id="media" type="file" accept="image/*,video/*" />
+      <button id="upload-media" type="button">上传媒体并插入正文</button>
+
+      <label for="body">正文 Markdown</label>
+      <textarea id="body" required></textarea>
+
+      <label class="check">
+        <input id="draft" type="checkbox" />
+        草稿
+      </label>
+
+      <button type="submit">发布到 GitHub</button>
+    </form>
+    <output id="status"></output>
+
+    <script>
+      const repo = "omaler886/ckai-clean-blog";
+      const branch = "main";
+      const apiBase = `https://api.github.com/repos/${repo}/contents`;
+      const form = document.querySelector("#post-form");
+      const statusOutput = document.querySelector("#status");
+      const bodyInput = document.querySelector("#body");
+      const dateInput = document.querySelector("#date");
+
+      dateInput.value = new Date().toISOString().slice(0, 10);
+
+      const writeStatus = (message) => {
+        statusOutput.textContent = message;
+      };
+
+      const utf8Base64 = (value) => {
+        const bytes = new TextEncoder().encode(value);
+        let binary = "";
+
+        for (const byte of bytes) {
+          binary += String.fromCharCode(byte);
+        }
+
+        return btoa(binary);
+      };
+
+      const fileBase64 = async (file) =>
+        new Promise((resolve, reject) => {
+          const reader = new FileReader();
+
+          reader.addEventListener("load", () => {
+            const value = String(reader.result);
+            resolve(value.slice(value.indexOf(",") + 1));
+          });
+          reader.addEventListener("error", () => reject(reader.error));
+          reader.readAsDataURL(file);
+        });
+
+      const safeSlug = (value) => {
+        const slug = value
+          .normalize("NFKD")
+          .toLowerCase()
+          .replace(/[^a-z0-9\u4e00-\u9fff]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+
+        return slug || `post-${Date.now()}`;
+      };
+
+      const safeFileName = (name) =>
+        name
+          .normalize("NFKD")
+          .toLowerCase()
+          .replace(/[^a-z0-9._-]+/g, "-")
+          .replace(/^-+|-+$/g, "") || `media-${Date.now()}`;
+
+      const githubPut = async ({ token, path, content, message }) => {
+        const response = await fetch(`${apiBase}/${path}`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            branch,
+            message,
+            content,
+          }),
+        });
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            `GitHub upload failed. status=${response.status}, response=${JSON.stringify(payload)}`,
+          );
+        }
+
+        return payload;
+      };
+
+      document.querySelector("#upload-media").addEventListener("click", async () => {
+        const token = document.querySelector("#token").value.trim();
+        const file = document.querySelector("#media").files[0];
+
+        if (!token || !file) {
+          writeStatus("请先填写 GitHub token 并选择媒体文件。");
+          return;
+        }
+
+        writeStatus("正在上传媒体...");
+        const now = new Date();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const targetPath = `public/media/uploads/${now.getFullYear()}/${month}/${crypto.randomUUID().slice(0, 8)}-${safeFileName(file.name)}`;
+        const publicPath = targetPath.replace(/^public/, "");
+        await githubPut({
+          token,
+          path: targetPath,
+          content: await fileBase64(file),
+          message: `Upload media ${file.name}`,
+        });
+
+        const snippet = file.type.startsWith("video/")
+          ? `<video controls src="${publicPath}"></video>`
+          : `![${file.name}](${publicPath})`;
+        bodyInput.value = `${bodyInput.value.trim()}\n\n${snippet}\n`;
+        writeStatus(`媒体已上传：${publicPath}`);
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const token = document.querySelector("#token").value.trim();
+        const title = document.querySelector("#title").value.trim();
+        const description = document.querySelector("#description").value.trim();
+        const date = dateInput.value;
+        const tags = document
+          .querySelector("#tags")
+          .value.split(",")
+          .map((tag) => tag.trim())
+          .filter(Boolean);
+        const draft = document.querySelector("#draft").checked;
+        const body = bodyInput.value.trim();
+        const path = `src/content/posts/${date}-${safeSlug(title)}-${crypto.randomUUID().slice(0, 6)}.md`;
+        const markdown = `---\ntitle: ${JSON.stringify(title)}\ndescription: ${JSON.stringify(description)}\ndate: ${date}\ntags: ${JSON.stringify(tags)}\ndraft: ${draft}\nauthor: CKai\n---\n\n${body}\n`;
+
+        writeStatus("正在发布文章...");
+        await githubPut({
+          token,
+          path,
+          content: utf8Base64(markdown),
+          message: `Publish ${title}`,
+        });
+        writeStatus(`文章已发布：${path}`);
+      });
+    </script>
+  </body>
+</html>

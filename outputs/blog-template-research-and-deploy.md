@@ -109,6 +109,14 @@ src/content/posts/
 public/media/uploads/
 ```
 
+备用后台：
+
+```text
+https://你的域名/admin/manual.html
+```
+
+它直接用浏览器里输入的 GitHub token 提交 Markdown 和媒体文件，不依赖 GitHub OAuth App。
+
 ### R2 图床/视频床
 
 Cloudflare 当前账号需要先在 Dashboard 启用 R2。启用后访问：
@@ -139,6 +147,8 @@ CLOUDFLARE_API_TOKEN
 ```
 
 建议使用最小权限 Cloudflare API Token，不建议把 Global API Key 持久保存到 GitHub Secrets。
+
+如果这些 secrets 没设置，GitHub Actions 会只构建并跳过 Cloudflare 自动部署。当前已用本地临时 Global API Key 完成一次 Cloudflare Pages 直传部署。
 
 ## 后台和 R2 必填环境变量
 

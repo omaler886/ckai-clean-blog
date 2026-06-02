@@ -40,6 +40,14 @@ https://你的域名/admin/
 
 后台会把文章写入 GitHub 仓库的 `src/content/posts/`，Cloudflare Pages 会跟着 Git 提交自动重新部署。
 
+如果 GitHub OAuth App 还没配置，可以打开：
+
+```text
+https://你的域名/admin/manual.html
+```
+
+这个备用后台用浏览器里的 GitHub token 直接提交文章和媒体，不需要把 token 存到服务器。
+
 ### 方式二：手动上传自动识别
 
 把文件丢进 `incoming/`，然后运行：
@@ -87,6 +95,8 @@ CLOUDFLARE_API_TOKEN
 ```
 
 建议用 Cloudflare API Token，不要把 Global API Key 放进 GitHub Secrets。Token 权限只给 Pages 项目部署所需权限。
+
+如果这两个 secret 没设置，GitHub Actions 会只构建并跳过 Cloudflare 自动部署。
 
 R2 上传需要先在 Cloudflare Dashboard 启用 R2，然后给 Pages 项目增加 R2 binding：
 
