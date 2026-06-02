@@ -1,0 +1,33 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { formatDate, getAllTags, getPublishedPosts, postUrl } from "../../utils/posts";
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts();
+  return getAllTags(posts).map((tag) => ({
+    params: { tag },
+    props: { tag, posts: posts.filter((post) => post.data.tags.includes(tag)) },
+  }));
+}
+
+const { tag, posts } = Astro.props;
+---
+
+<BaseLayout title={`标签：${tag}`} description={`Posts tagged ${tag}`}>
+  <section class="intro">
+    <h1>{tag}</h1>
+  </section>
+  <ol class="post-list">
+    {posts.map((post) => (
+      <li class="post-item">
+        <h2>
+          <a href={postUrl(post)}>{post.data.title}</a>
+        </h2>
+        <p class="post-meta">
+          <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+        </p>
+        {post.data.description && <p>{post.data.description}</p>}
+      </li>
+    ))}
+  </ol>
+</BaseLayout>

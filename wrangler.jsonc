@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "ckai-clean-blog",
+  "compatibility_date": "2026-06-02",
+  "pages_build_output_dir": "dist",
+  "r2_buckets": [
+    {
+      "binding": "MEDIA_BUCKET",
+      "bucket_name": "ckai-blog-media"
+    }
+  ],
+  "vars": {
+    "MEDIA_BASE_URL": "https://ckai-clean-blog.pages.dev/api/media"
+  }
+}

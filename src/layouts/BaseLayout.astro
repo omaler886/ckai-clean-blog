@@ -1,0 +1,42 @@
+---
+import "../styles/global.css";
+import { site } from "../site";
+
+type Props = {
+  title?: string;
+  description?: string;
+};
+
+const { title = site.title, description = site.description } = Astro.props;
+const pageTitle = title === site.title ? title : `${title} | ${site.name}`;
+---
+
+<!doctype html>
+<html lang={site.defaultLocale}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="alternate" type="application/rss+xml" href="/rss.xml" />
+    <title>{pageTitle}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-name" href="/">{site.name}</a>
+      <nav aria-label="Primary navigation">
+        <a href="/">文章</a>
+        <a href="/tags/">标签</a>
+        <a href="/about/">关于</a>
+        <a href="/admin/">后台</a>
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <span>{site.name}</span>
+      <a href="/rss.xml">RSS</a>
+    </footer>
+  </body>
+</html>

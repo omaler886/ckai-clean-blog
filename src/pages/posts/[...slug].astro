@@ -1,0 +1,45 @@
+---
+import { render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { formatDate, getPublishedPosts, postSlug } from "../../utils/posts";
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts();
+  return posts.map((post) => ({
+    params: { slug: postSlug(post) },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<BaseLayout title={post.data.title} description={post.data.description}>
+  <article>
+    <header class="post-header">
+      <h1>{post.data.title}</h1>
+      <p class="post-meta">
+        <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+        {post.data.updated && <span>更新于 {formatDate(post.data.updated)}</span>}
+        {post.data.author && <span>{post.data.author}</span>}
+      </p>
+      {post.data.description && <p class="post-description">{post.data.description}</p>}
+      {
+        post.data.tags.length > 0 && (
+          <div class="post-tags">
+            {post.data.tags.map((tag) => (
+              <a class="tag" href={`/tags/${encodeURIComponent(tag)}/`}>
+                {tag}
+              </a>
+            ))}
+          </div>
+        )
+      }
+      {post.data.cover && <img class="post-cover" src={post.data.cover} alt="" />}
+    </header>
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+</BaseLayout>

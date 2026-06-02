@@ -1,0 +1,28 @@
+{
+  "name": "ckai-clean-blog",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "import": "node scripts/import-content.mjs",
+    "deploy:pages": "wrangler pages deploy ./dist --project-name ckai-clean-blog --branch main",
+    "cf:types": "wrangler types"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^4.3.0",
+    "@astrojs/rss": "^4.0.12",
+    "astro": "^5.9.3",
+    "gray-matter": "^4.0.3",
+    "mammoth": "^1.9.1",
+    "turndown": "^7.2.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@cloudflare/workers-types": "^4.20260531.0",
+    "typescript": "^5.8.3",
+    "wrangler": "^4.18.0"
+  }
+}

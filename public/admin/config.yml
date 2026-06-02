@@ -1,0 +1,35 @@
+backend:
+  name: github
+  repo: omaler886/ckai-clean-blog
+  branch: main
+  base_url: /
+  auth_endpoint: api/auth
+  auth_scope: repo
+
+publish_mode: editorial_workflow
+media_folder: public/media/uploads
+public_folder: /media/uploads
+site_url: https://ckai-clean-blog.pages.dev
+display_url: https://ckai-clean-blog.pages.dev
+locale: zh_Hans
+
+collections:
+  - name: posts
+    label: 文章
+    label_singular: 文章
+    folder: src/content/posts
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    extension: md
+    format: frontmatter
+    preview_path: "posts/{{slug}}"
+    fields:
+      - { label: 标题, name: title, widget: string }
+      - { label: 摘要, name: description, widget: text, required: false }
+      - { label: 日期, name: date, widget: datetime, date_format: YYYY-MM-DD, time_format: false }
+      - { label: 更新时间, name: updated, widget: datetime, date_format: YYYY-MM-DD, time_format: false, required: false }
+      - { label: 标签, name: tags, widget: list, required: false }
+      - { label: 封面图, name: cover, widget: image, required: false }
+      - { label: 草稿, name: draft, widget: boolean, default: false }
+      - { label: 作者, name: author, widget: string, required: false }
+      - { label: 正文, name: body, widget: markdown }
